@@ -23,9 +23,7 @@ def start_training(classes):
     results = new_training(classes)
     return {
         "acc": results[0],
-        "val_acc": results[1],
-        "loss": results[2],
-        "val_loss": results[3]
+        "loss": results[1]
     }
 
 def new_training(classes):
@@ -113,13 +111,10 @@ def new_training(classes):
         validation_steps=valid_data_generator.samples // batch_size
     )
 
-    history_dict = history.history
-    print(history_dict.keys())
-
     acc = history.history['accuracy'][epochs-1]
-    val_acc = history.history['val_acc'][epochs-1]
+    # val_acc = history.history['val_accuracy'][epochs-1]
     loss = history.history['loss'][epochs-1]
-    val_loss = history.history['val_loss'][epochs-1]
+    # val_loss = history.history['val_loss'][epochs-1]
 
     model.save(TF_MODEL_DIR)
 
@@ -128,4 +123,5 @@ def new_training(classes):
     # loss = 0
     # val_loss = 0
 
-    return [round(acc, 2), round(val_acc, 2), round(loss, 2), round(val_loss, 2)]
+    # return [round(acc, 2), round(val_acc, 2), round(loss, 2), round(val_loss, 2)]
+    return [round(acc, 2), round(loss, 2)]
