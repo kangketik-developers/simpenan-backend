@@ -3,11 +3,13 @@ import motor.motor_asyncio
 
 from pydantic import BaseModel
 
+from utils.connection_util import DB_URL
+
 class AuthIn(BaseModel):
     username: str
     password: str
 
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://10.10.10.3:27017")
+client = motor.motor_asyncio.AsyncIOMotorClient(DB_URL)
 database = client.simpenan
 collection = database.users
 

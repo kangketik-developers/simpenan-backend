@@ -4,6 +4,7 @@ import motor.motor_asyncio
 
 from typing import Optional
 from pydantic import BaseModel
+from utils.connection_util import DB_URL
 
 class AttendanceOut(BaseModel):
     id: str
@@ -36,7 +37,7 @@ class AttendancePutDb(BaseModel):
     total_score: float
     updated_at: datetime.datetime
 
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
+client = motor.motor_asyncio.AsyncIOMotorClient(DB_URL)
 database = client.simpenan
 collection = database.attendance
 

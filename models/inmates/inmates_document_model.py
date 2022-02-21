@@ -4,6 +4,7 @@ import motor.motor_asyncio
 
 from typing import Optional
 from pydantic import BaseModel
+from utils.connection_util import DB_URL
 
 class DocInmatesIn(BaseModel):
     description: str

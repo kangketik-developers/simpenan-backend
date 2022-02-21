@@ -4,6 +4,7 @@ import motor.motor_asyncio
 
 from typing import Optional
 from pydantic import BaseModel
+from utils.connection_util import DB_URL
 
 class VidInmatesOut(BaseModel):
     id: str
@@ -30,7 +31,7 @@ class VidInmatesDB(BaseModel):
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
 
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
+client = motor.motor_asyncio.AsyncIOMotorClient(DB_URL)
 database = client.simpenan
 collection = database.inmates_videos
 
