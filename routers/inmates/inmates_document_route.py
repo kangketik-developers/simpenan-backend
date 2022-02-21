@@ -20,7 +20,7 @@ async def show_all_inmates_document():
 
 @router.get("/{id}", response_model=DocInmatesOut)
 async def show_one_inmates_document(id: str):
-    response = await fetch_by_inmates_doc_id(id)
+    response = await fetch_all_doc_inmates_by_inmates_id(id)
     if response:
         return response
     raise HTTPException(404, f"Tidak ada dokumen dengan id {id}")
