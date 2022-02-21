@@ -113,8 +113,11 @@ def new_training(classes):
         validation_steps=valid_data_generator.samples // batch_size
     )
 
+    history_dict = history.history
+    print(history_dict.keys())
+
     acc = history.history['accuracy'][epochs-1]
-    val_acc = history.history['val_accuracy'][epochs-1]
+    val_acc = history.history['val_acc'][epochs-1]
     loss = history.history['loss'][epochs-1]
     val_loss = history.history['val_loss'][epochs-1]
 
