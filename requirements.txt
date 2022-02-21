@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+motor
+passlib
+PyJWT
+fastapi-pagination
+python-dotenv
+opencv-python
+tensorflow
+numpy
+matplotlib
+aiofiles
+python-multipart
+scipy
+pytz
