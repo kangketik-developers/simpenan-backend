@@ -6,10 +6,12 @@ PyJWT
 fastapi-pagination
 python-dotenv
 opencv-python
-tensorflow
+# tensorflow
 numpy
 matplotlib
 aiofiles
 python-multipart
 scipy
 pytz
+werkzeug
+opencv-python
