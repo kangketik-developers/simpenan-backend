@@ -52,6 +52,13 @@ async def fetch_by_inmates_doc_id(id):
     document = await collection.find_one({ "id": id })
     return document
 
+async def fetch_inmates_doc_by_inmates_id(inmates):
+    inmates_doc = []
+    cursor = collection.find({"inmates_id": inmates})
+    async for document in cursor:
+        inmates_doc.append(DocInmatesOut(**document))
+    return inmates_doc
+
 async def fetch_by_inmates_doc_desc(description):
     document = await collection.find_one({ "description": description })
     return document
