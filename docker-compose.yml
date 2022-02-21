@@ -1,6 +1,26 @@
 version: "3.9"
+networks:
+  default:
+    name: vlan_external
+    driver: bridge
+  internal:
+    name: vlan_internal
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
 services:
   backend:
-    build: .
+    image: ghcr.io/kangketik-developers/simpenan-backend:main
+    networks:
+      - default
+      - internal
     ports:
       - "8000:8000"
+  database:
+    image: mongo:latest
+    networks:
+      internal:
+        ipv4_address: 10.10.10.3
+    ports:
+      - "27017:27017"
