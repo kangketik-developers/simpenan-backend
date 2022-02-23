@@ -25,7 +25,7 @@ services:
   database:
     image: mongo:latest
     volumes:
-      - ./data:/data/db
+      - ./data:/data
     networks:
       internal:
         ipv4_address: 10.10.10.3
