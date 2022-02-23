@@ -1,16 +1,18 @@
-import uuid
 import datetime
-import motor.motor_asyncio
-
+import uuid
 from typing import Optional
+
+import motor.motor_asyncio
 from pydantic import BaseModel
-from utils.connection_util import DB_URL
 
 from utils.auth_util import AuthHandler
+from utils.connection_util import DB_URL
+
 
 class UsersIn(BaseModel):
     fullname: str
     username: str
+
 
 class UsersOut(BaseModel):
     id: str
@@ -19,6 +21,7 @@ class UsersOut(BaseModel):
     lastlog: Optional[datetime.datetime]
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
+
 
 class UsersDB(BaseModel):
     id: str
@@ -29,9 +32,11 @@ class UsersDB(BaseModel):
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
 
+
 client = motor.motor_asyncio.AsyncIOMotorClient(DB_URL)
 database = client.simpenan
 collection = database.users
+
 
 async def fetch_all_users():
     users = []
@@ -40,13 +45,16 @@ async def fetch_all_users():
         users.append(UsersOut(**document))
     return users
 
+
 async def fetch_by_id(id):
-    document = await collection.find_one({ "id": id })
+    document = await collection.find_one({"id": id})
     return document
 
+
 async def fetch_by_username(username):
-    document = await collection.find_one({ "username": username })
+    document = await collection.find_one({"username": username})
     return document
+
 
 async def create_user(user):
     document = user.dict()
@@ -54,21 +62,22 @@ async def create_user(user):
     hashed_password = AuthHandler().get_password_hash(random_pass)
     result = await collection.insert_one(
         UsersDB(
-            **document, 
-            id=str(uuid.uuid4()), 
+            **document,
+            id=str(uuid.uuid4()),
             password=hashed_password,
             created_at=datetime.datetime.today()
         ).dict()
     )
-    if result :
-        return { "detail" : f"User berhasil disimpan dengan password {random_pass}!"}
+    if result:
+        return {"detail": f"User berhasil disimpan dengan password {random_pass}!"}
     return 0
 
+
 async def put_user(id, user):
-    result = await collection.find_one({ "id": id })
+    result = await collection.find_one({"id": id})
     response = await collection.update_one(
-        { "id": id }, 
-        { 
+        {"id": id},
+        {
             "$set": UsersDB(
                 **user.dict(),
                 id=id,
@@ -78,31 +87,33 @@ async def put_user(id, user):
             ).dict()
         }
     )
-    if response :
-        return { "detail" : "User berhasil diperbarui!"}
+    if response:
+        return {"detail": "User berhasil diperbarui!"}
     return 0
+
 
 async def put_new_password(id, password):
     hashed_password = AuthHandler().get_password_hash(password)
     await collection.update_one(
-        { "id": id }, 
-        { 
-            "$set": {"password": hashed_password } 
+        {"id": id},
+        {
+            "$set": {"password": hashed_password}
         }
     )
     await collection.update_one(
-        { "id": id }, 
-        { 
-            "$set": {"updated_at": datetime.datetime.today() } 
+        {"id": id},
+        {
+            "$set": {"updated_at": datetime.datetime.today()}
         }
     )
-    result = await collection.find_one({ "id": id })
-    if result :
-        return { "detail" : "Password berhasil diperbarui!"}
+    result = await collection.find_one({"id": id})
+    if result:
+        return {"detail": "Password berhasil diperbarui!"}
     return 0
 
+
 async def delete_user(id):
-    result = await collection.delete_one({ "id": id })
-    if result :
-        return { "detail" : "User berhasil dihapus!"}
+    result = await collection.delete_one({"id": id})
+    if result:
+        return {"detail": "User berhasil dihapus!"}
     return 0

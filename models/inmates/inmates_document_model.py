@@ -6,8 +6,10 @@ from typing import Optional
 from pydantic import BaseModel
 from utils.connection_util import DB_URL
 
+
 class DocInmatesIn(BaseModel):
     description: str
+
 
 class DocInmatesOut(BaseModel):
     id: str
@@ -17,9 +19,11 @@ class DocInmatesOut(BaseModel):
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
 
+
 class DocInmatesOutDelete(BaseModel):
     id: str
     filename: str
+
 
 class DocInmatesDB(BaseModel):
     id: str
@@ -30,9 +34,11 @@ class DocInmatesDB(BaseModel):
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
 
+
 client = motor.motor_asyncio.AsyncIOMotorClient(DB_URL)
 database = client.simpenan
 collection = database.inmates_docs
+
 
 async def fetch_all_doc_inmates():
     inmates_doc = []
@@ -41,6 +47,7 @@ async def fetch_all_doc_inmates():
         inmates_doc.append(DocInmatesOut(**document))
     return inmates_doc
 
+
 async def fetch_all_doc_inmates_by_inmates_id(inmates):
     inmates_doc = []
     cursor = collection.find({"inmates_id": inmates})
@@ -48,9 +55,11 @@ async def fetch_all_doc_inmates_by_inmates_id(inmates):
         inmates_doc.append(DocInmatesOutDelete(**document))
     return inmates_doc
 
+
 async def fetch_by_inmates_doc_id(id):
-    document = await collection.find_one({ "id": id })
+    document = await collection.find_one({"id": id})
     return document
+
 
 async def fetch_inmates_doc_by_inmates_id(inmates):
     inmates_doc = []
@@ -59,31 +68,34 @@ async def fetch_inmates_doc_by_inmates_id(inmates):
         inmates_doc.append(DocInmatesOut(**document))
     return inmates_doc
 
+
 async def fetch_by_inmates_doc_desc(description):
-    document = await collection.find_one({ "description": description })
+    document = await collection.find_one({"description": description})
     return document
+
 
 async def post_inmates_doc(inmates_doc, id, filename):
     document = inmates_doc.dict()
     result = await collection.insert_one(
         DocInmatesDB(
-            **document, 
-            id=str(uuid.uuid4()), 
+            **document,
+            id=str(uuid.uuid4()),
             inmates_id=id,
             filename=filename,
             filepath=f"/uploads/inmates_files/{filename}",
             created_at=datetime.datetime.today()
         ).dict()
     )
-    if result :
-        return { "detail" : "Data dokumen warga binaan berhasil dibuat!" }
+    if result:
+        return {"detail": "Data dokumen warga binaan berhasil dibuat!"}
     return 0
 
+
 async def put_inmates_doc(id, inmates_doc):
-    result = await collection.find_one({ "id": id })
+    result = await collection.find_one({"id": id})
     response = await collection.update_one(
-        { "id": id }, 
-        { 
+        {"id": id},
+        {
             "$set": DocInmatesDB(
                 **inmates_doc.dict(),
                 id=id,
@@ -92,12 +104,13 @@ async def put_inmates_doc(id, inmates_doc):
             ).dict()
         }
     )
-    if response :
-        return { "detail" : "Dokumen warga binaan berhasil diperbarui!"}
+    if response:
+        return {"detail": "Dokumen warga binaan berhasil diperbarui!"}
     return 0
+
 
 async def delete_inmates_doc(id):
     result = await collection.delete_one({"id": id})
-    if result :
-        return { "detail" : "Dokumen warga binaan berhasil dihapus!"}
+    if result:
+        return {"detail": "Dokumen warga binaan berhasil dihapus!"}
     return 0

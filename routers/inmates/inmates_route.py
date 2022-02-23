@@ -1,11 +1,12 @@
-import os, shutil
+import os
+import shutil
 
 from fastapi import APIRouter, HTTPException
 from fastapi_pagination import Page, add_pagination, paginate
 
+from models.inmates.inmates_document_model import fetch_all_doc_inmates_by_inmates_id, delete_inmates_doc
 from models.inmates.inmates_model import *
 from models.inmates.inmates_video_model import fetch_all_vid_inmates_by_inmates_id, delete_inmates_vid
-from models.inmates.inmates_document_model import fetch_all_doc_inmates_by_inmates_id, delete_inmates_doc
 
 router = APIRouter()
 
@@ -14,10 +15,12 @@ DOCS_UPLOAD_PATH = os.path.join(BASE_PATH, "uploads/inmates_files")
 VIDS_UPLOAD_PATH = os.path.join(BASE_PATH, "uploads/inmates_videos")
 FACES_UPLOAD_PATH = os.path.join(BASE_PATH, "assets/faces")
 
+
 @router.get("/", response_model=Page[InmatesOut])
 async def show_all_inmates():
     response = await fetch_all_inmates()
     return paginate(response)
+
 
 @router.get("/{id}", response_model=InmatesOut)
 async def show_one_inmates(id: str):
@@ -25,6 +28,7 @@ async def show_one_inmates(id: str):
     if response:
         return response
     raise HTTPException(404, f"tidak ada warga binaan dengan id {id}")
+
 
 @router.post("/", status_code=201)
 async def create_inmates(inmates: InmatesIn):
@@ -43,6 +47,7 @@ async def update_inmates(id, inmates: InmatesIn):
     if response:
         return response
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika memperbarui warga binaan!')
+
 
 @router.delete("/{id}")
 async def remove_inmates(id: str):
@@ -66,6 +71,7 @@ async def remove_inmates(id: str):
         return response
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menghapus warga binaan!')
 
+
 @router.delete("/")
 async def remove_all_inmates():
     inmates = await fetch_all_inmates()
@@ -87,9 +93,8 @@ async def remove_all_inmates():
                 face_file = os.path.join(FACES_UPLOAD_PATH, video.sampledirname)
                 if os.path.exists(face_file):
                     shutil.rmtree(face_file)
-        return { "detail" : "Seluruh warga binaan berhasil dihapus!"}
+        return {"detail": "Seluruh warga binaan berhasil dihapus!"}
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menghapus warga binaan!')
-
 
 
 add_pagination(router)

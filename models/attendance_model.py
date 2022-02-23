@@ -1,10 +1,12 @@
-import uuid
 import datetime
-import motor.motor_asyncio
-
+import uuid
 from typing import Optional
+
+import motor.motor_asyncio
 from pydantic import BaseModel
+
 from utils.connection_util import DB_URL
+
 
 class AttendanceOut(BaseModel):
     id: str
@@ -12,11 +14,13 @@ class AttendanceOut(BaseModel):
     confident: float
     messages: str
 
+
 class AttendancePutDbOut(BaseModel):
     id: str
     sign_out: Optional[datetime.time]
     attendance_score: float
     total_score: float
+
 
 class AttendancePostDb(BaseModel):
     id: str
@@ -31,15 +35,18 @@ class AttendancePostDb(BaseModel):
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
 
+
 class AttendancePutDb(BaseModel):
     sign_out: str
     attendance_score: float
     total_score: float
     updated_at: datetime.datetime
 
+
 client = motor.motor_asyncio.AsyncIOMotorClient(DB_URL)
 database = client.simpenan
 collection = database.attendance
+
 
 async def fetch_all_atendance():
     inmates = []
@@ -48,22 +55,25 @@ async def fetch_all_atendance():
         inmates.append(AttendancePostDb(**document))
     return inmates
 
+
 async def fetch_attendance_by_inmates_id(id):
-    document = await collection.find_one({ "inmates_id": id })
+    document = await collection.find_one({"inmates_id": id})
     if document is None:
         return 0
     return AttendancePutDbOut(**document)
 
+
 async def fetch_attendance_by_inmates_id_and_date(id, date):
-    document = await collection.find_one({ "inmates_id": id, "date": date })
+    document = await collection.find_one({"inmates_id": id, "date": date})
     if document is None:
         return None
     return AttendancePutDbOut(**document)
 
+
 async def post_attendance_sign_in(id, name, tanggal, jam, nilai_absen, nilai_kegiatan, nilai_total):
     result = await collection.insert_one(
         AttendancePostDb(
-            id=str(uuid.uuid4()), 
+            id=str(uuid.uuid4()),
             inmates_id=id,
             name=name,
             date=tanggal,
@@ -74,14 +84,15 @@ async def post_attendance_sign_in(id, name, tanggal, jam, nilai_absen, nilai_keg
             created_at=datetime.datetime.today()
         ).dict()
     )
-    if result :
-        return { "detail" : "Absensi berhasil di simpan!" }
+    if result:
+        return {"detail": "Absensi berhasil di simpan!"}
     return 0
+
 
 async def put_attendance_sign_out(id, sign_out, attendance_score, total_score):
     response = await collection.update_one(
-        { "id": id }, 
-        { 
+        {"id": id},
+        {
             "$set": AttendancePutDb(
                 sign_out=sign_out,
                 attendance_score=attendance_score,
@@ -90,12 +101,13 @@ async def put_attendance_sign_out(id, sign_out, attendance_score, total_score):
             ).dict()
         }
     )
-    if response :
-        return { "detail" : "Absen pulang berhasil diperbarui!"}
+    if response:
+        return {"detail": "Absen pulang berhasil diperbarui!"}
     return 0
 
+
 async def delete_attendance(id):
-    result = await collection.delete_one({ "id": id })
-    if result :
-        return { "detail" : "Data absensi berhasil dihapus!"}
+    result = await collection.delete_one({"id": id})
+    if result:
+        return {"detail": "Data absensi berhasil dihapus!"}
     return 0

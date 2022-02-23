@@ -1,12 +1,13 @@
-import os, shutil
-import aiofiles
+import os
+import shutil
 
-from werkzeug.utils import secure_filename
+import aiofiles
 from fastapi import APIRouter, HTTPException, File, UploadFile, exceptions
 from fastapi_pagination import Page, add_pagination, paginate
+from werkzeug.utils import secure_filename
 
-from models.inmates.inmates_video_model import *
 from models.inmates.inmates_model import fetch_by_inmates_id
+from models.inmates.inmates_video_model import *
 from utils.generator_util import split_from_videos
 
 router = APIRouter()
@@ -15,10 +16,12 @@ BASE_PATH = os.path.abspath(os.path.dirname("."))
 VIDS_UPLOAD_PATH = os.path.join(BASE_PATH, "uploads/inmates_videos")
 FACES_UPLOAD_PATH = os.path.join(BASE_PATH, "assets/faces")
 
+
 @router.get("/", response_model=Page[VidInmatesOut])
 async def show_all_inmates_document():
     response = await fetch_all_vid_inmates()
     return paginate(response)
+
 
 @router.get("/{id}", response_model=VidInmatesOut)
 async def show_one_inmates_document(id: str):
@@ -26,6 +29,7 @@ async def show_one_inmates_document(id: str):
     if response:
         return response
     raise HTTPException(404, f"Tidak ada video dengan id {id}")
+
 
 @router.post("/{id}", status_code=201)
 async def create_inmates_document(id: str, file: UploadFile = File(...)):
@@ -39,7 +43,7 @@ async def create_inmates_document(id: str, file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f'Video untuk warga binaan dengan id {id} sudah terdaftar!')
     filename = secure_filename(videoname).lower()
     folder_berkas = os.path.join(VIDS_UPLOAD_PATH, filename)
-    try: 
+    try:
         async with aiofiles.open(folder_berkas, 'wb') as out_file:
             content = await file.read()
             await out_file.write(content)
@@ -50,7 +54,7 @@ async def create_inmates_document(id: str, file: UploadFile = File(...)):
     if response:
         return response
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menyimpan video!')
-    
+
 
 @router.delete("/{id}")
 async def remove_inmates_document(id: str):
@@ -67,5 +71,6 @@ async def remove_inmates_document(id: str):
     if response:
         return response
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menghapus video!')
+
 
 add_pagination(router)

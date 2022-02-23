@@ -1,17 +1,14 @@
 import os
-import uuid
-import pytz
-import aiofiles
-import datetime
 
-from werkzeug.utils import secure_filename
+import aiofiles
+import pytz
 from fastapi import APIRouter, HTTPException, File, UploadFile, exceptions
 from fastapi_pagination import Page, add_pagination, paginate
+from werkzeug.utils import secure_filename
 
+from models.attendance_model import *
 from models.inmates.inmates_model import fetch_all_inmates_label, fetch_by_inmates_name
 from models.inmates.inmates_score_model import *
-from models.attendance_model import *
-
 from utils.attendance_util import rules_absensi, hitung_hari
 from utils.detector_util import detect
 
@@ -22,10 +19,12 @@ total_hari = hitung_hari()
 BASE_PATH = os.path.abspath(os.path.dirname("."))
 ATT_CAP_PATH = os.path.join(BASE_PATH, "uploads/attendance_cap")
 
+
 @router.get("/", response_model=Page[AttendancePostDb])
 async def show_all_attendance():
     response = await fetch_all_atendance()
     return paginate(response)
+
 
 @router.post("/masuk", response_model=AttendanceOut)
 async def capture_sign_in_attendance(file: UploadFile = File(...)):
@@ -51,7 +50,7 @@ async def capture_sign_in_attendance(file: UploadFile = File(...)):
     jam = datetime.datetime.now(pytz.timezone('Asia/Jakarta')).time().strftime("%H:%M:%S")
     nilai_absen = rules_absensi()
     nilai_kegiatan = 42
-    nilai_total = nilai_absen+nilai_kegiatan
+    nilai_total = nilai_absen + nilai_kegiatan
     # 
     if os.path.exists(folder_berkas):
         os.remove(folder_berkas)
@@ -66,7 +65,7 @@ async def capture_sign_in_attendance(file: UploadFile = File(...)):
                     month=month,
                     year=year,
                     total_score=nilai_total,
-                    percentage_score=round(nilai_total/total_hari, 2)
+                    percentage_score=round(nilai_total / total_hari, 2)
                 )
                 await post_inmates_score(score)
             else:
@@ -75,11 +74,12 @@ async def capture_sign_in_attendance(file: UploadFile = File(...)):
                     name=find_inmates.name,
                     month=month,
                     year=year,
-                    total_score=find_score.total_score+nilai_total,
-                    percentage_score=round((find_score.total_score+nilai_total)/total_hari, 2)
+                    total_score=find_score.total_score + nilai_total,
+                    percentage_score=round((find_score.total_score + nilai_total) / total_hari, 2)
                 )
                 await put_inmates_score(find_score.id, score)
-            await post_attendance_sign_in(find_inmates.id, find_inmates.name, tanggal, jam, nilai_absen, nilai_kegiatan, nilai_total)
+            await post_attendance_sign_in(find_inmates.id, find_inmates.name, tanggal, jam, nilai_absen, nilai_kegiatan,
+                                          nilai_total)
         return {
             "id": find_inmates.id,
             "name": results[0],
@@ -87,6 +87,7 @@ async def capture_sign_in_attendance(file: UploadFile = File(...)):
             "messages": results[2]
         }
     raise HTTPException(status_code=400, detail=f'Terjadi kesalahan ketika menyimpan capture!')
+
 
 @router.put("/pulang", response_model=AttendanceOut)
 async def capture_sign_out_attendance(file: UploadFile = File(...)):
@@ -115,7 +116,7 @@ async def capture_sign_out_attendance(file: UploadFile = File(...)):
             month = datetime.datetime.now().date().strftime("%m")
             year = datetime.datetime.now().date().strftime("%Y")
             nilai_absen = find_attendance.attendance_score + 2.5
-            nilai_total = find_attendance.total_score+2.5
+            nilai_total = find_attendance.total_score + 2.5
             if find_attendance.sign_out is None:
                 find_score = await fetch_inmates_score_by_args(find_inmates.id, int(month), int(year))
                 if find_score is None:
@@ -125,7 +126,7 @@ async def capture_sign_out_attendance(file: UploadFile = File(...)):
                         month=month,
                         year=year,
                         total_score=nilai_total,
-                        percentage_score=round(nilai_total/total_hari, 2)
+                        percentage_score=round(nilai_total / total_hari, 2)
                     )
                     await post_inmates_score(score)
                 else:
@@ -134,8 +135,8 @@ async def capture_sign_out_attendance(file: UploadFile = File(...)):
                         name=find_inmates.name,
                         month=month,
                         year=year,
-                        total_score=find_score.total_score+2.5,
-                        percentage_score=round((find_score.total_score+2.5)/total_hari, 2)
+                        total_score=find_score.total_score + 2.5,
+                        percentage_score=round((find_score.total_score + 2.5) / total_hari, 2)
                     )
                     await put_inmates_score(find_score.id, score)
                 await put_attendance_sign_out(find_attendance.id, jam, nilai_absen, nilai_total)
@@ -147,6 +148,7 @@ async def capture_sign_out_attendance(file: UploadFile = File(...)):
             }
     raise HTTPException(status_code=400, detail=f'Terjadi kesalahan ketika menyimpan capture!')
 
+
 @router.delete("/")
 async def remove_all_attendance():
     attendances = await fetch_all_atendance()
@@ -156,8 +158,9 @@ async def remove_all_attendance():
         scores = await fetch_all_inmates_score()
         for score in scores:
             await delete_inmates_score(score.id)
-        return { "detail" : "Seluruh absensi berhasil dihapus!"}
+        return {"detail": "Seluruh absensi berhasil dihapus!"}
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menghapus absensi!')
+
 
 @router.delete("/{id}")
 async def remove_attendance(id: str):
@@ -165,5 +168,6 @@ async def remove_attendance(id: str):
     if response:
         return response
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menghapus user!')
+
 
 add_pagination(router)

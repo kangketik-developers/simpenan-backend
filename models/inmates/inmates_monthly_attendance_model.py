@@ -6,12 +6,14 @@ from typing import Optional
 from pydantic import BaseModel
 from utils.connection_util import DB_URL
 
+
 class InmatesScoreIn(BaseModel):
     inmates_id: str
     name: str
     month: int
     year: int
     total_score: float
+
 
 class InmatesScoreOut(BaseModel):
     inmates_id: str
@@ -21,6 +23,7 @@ class InmatesScoreOut(BaseModel):
     total_score: float
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
+
 
 class InmatesScoreDb(BaseModel):
     id: str
@@ -32,9 +35,11 @@ class InmatesScoreDb(BaseModel):
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
 
+
 client = motor.motor_asyncio.AsyncIOMotorClient(DB_URL)
 database = client.simpenan
 collection = database.inmates_score
+
 
 async def fetch_all_inmates_score():
     inmates_score = []
@@ -43,31 +48,34 @@ async def fetch_all_inmates_score():
         inmates_score.append(InmatesScoreOut(**document))
     return inmates_score
 
+
 async def fetch_inmates_score_by_args(inmates_id, month, year):
-    document = await collection.find_one({ "inmates_id": inmates_id, "month": month, "year": year })
+    document = await collection.find_one({"inmates_id": inmates_id, "month": month, "year": year})
     if document is None:
         return 0
     return InmatesScoreOut(**document)
+
 
 async def post_inmates_score(inmates_score):
     document = inmates_score.dict()
     uid = str(uuid.uuid4())
     result = await collection.insert_one(
         InmatesScoreDb(
-            **document, 
-            id=uid, 
+            **document,
+            id=uid,
             created_at=datetime.datetime.today()
         ).dict()
     )
-    if result :
-        return { "detail" : f"Data warga binaan berhasil dibuat dengan id {uid}!" }
+    if result:
+        return {"detail": f"Data warga binaan berhasil dibuat dengan id {uid}!"}
     return 0
 
+
 async def put_inmates_score(id, inmates_score):
-    result = await collection.find_one({ "id": id })
+    result = await collection.find_one({"id": id})
     response = await collection.update_one(
-        { "id": id }, 
-        { 
+        {"id": id},
+        {
             "$set": InmatesScoreDb(
                 **inmates_score.dict(),
                 id=id,
@@ -76,6 +84,6 @@ async def put_inmates_score(id, inmates_score):
             ).dict()
         }
     )
-    if response :
-        return { "detail" : "warga binaan berhasil diperbarui!"}
+    if response:
+        return {"detail": "warga binaan berhasil diperbarui!"}
     return 0

@@ -1,9 +1,9 @@
 import os
-import aiofiles
 
-from werkzeug.utils import secure_filename
+import aiofiles
 from fastapi import APIRouter, HTTPException, File, Form, UploadFile, exceptions
 from fastapi_pagination import Page, add_pagination, paginate
+from werkzeug.utils import secure_filename
 
 from models.inmates.inmates_document_model import *
 from models.inmates.inmates_model import fetch_by_inmates_id
@@ -13,10 +13,12 @@ router = APIRouter()
 BASE_PATH = os.path.abspath(os.path.dirname("."))
 DOCS_UPLOAD_PATH = os.path.join(BASE_PATH, "uploads/inmates_files")
 
+
 @router.get("/", response_model=Page[DocInmatesOut])
 async def show_all_inmates_document():
     response = await fetch_all_doc_inmates()
     return paginate(response)
+
 
 @router.get("/{id}", response_model=Page[DocInmatesOut])
 async def show_one_inmates_document(id: str):
@@ -24,6 +26,7 @@ async def show_one_inmates_document(id: str):
     if response:
         return paginate(response)
     raise HTTPException(404, f"Tidak ada dokumen dengan id {id}")
+
 
 @router.post("/{id}", status_code=201)
 async def create_inmates_document(id: str, description: str = Form(...), file: UploadFile = File(...)):
@@ -36,7 +39,7 @@ async def create_inmates_document(id: str, description: str = Form(...), file: U
     extensi = file.filename.rsplit(".", 1)[1]
     filename = secure_filename(description + "." + extensi).lower()
     folder_berkas = os.path.join(DOCS_UPLOAD_PATH, filename)
-    try: 
+    try:
         async with aiofiles.open(folder_berkas, 'wb') as out_file:
             content = await file.read()
             await out_file.write(content)
@@ -47,7 +50,7 @@ async def create_inmates_document(id: str, description: str = Form(...), file: U
     if response:
         return response
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menyimpan dokumen!')
-    
+
 
 @router.delete("/{id}")
 async def remove_inmates_document(id: str):
@@ -61,5 +64,6 @@ async def remove_inmates_document(id: str):
     if response:
         return response
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menghapus dokumen!')
+
 
 add_pagination(router)
