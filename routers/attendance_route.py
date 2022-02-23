@@ -159,4 +159,11 @@ async def remove_all_attendance():
         return { "detail" : "Seluruh absensi berhasil dihapus!"}
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menghapus absensi!')
 
+@router.delete("/{id}")
+async def remove_user(id: str):
+    response = await delete_attendance(id)
+    if response:
+        return response
+    raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menghapus user!')
+
 add_pagination(router)
