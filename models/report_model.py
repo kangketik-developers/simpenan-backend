@@ -1,5 +1,4 @@
 import datetime
-import datetime
 from typing import Optional
 
 import motor.motor_asyncio
@@ -21,7 +20,6 @@ class ReportOut(BaseModel):
     activity_score: float
     attendance_score: float
     total_score: float
-    percentage_score: float
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
 
