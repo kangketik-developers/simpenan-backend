@@ -97,5 +97,5 @@ async def put_attendance_sign_out(id, sign_out, attendance_score, total_score):
 async def delete_attendance(id):
     result = await collection.delete_one({ "id": id })
     if result :
-        return { "detail" : "Data absensi berhasil dihapus seluruhnya!"}
+        return { "detail" : "Data absensi berhasil dihapus!"}
     return 0
