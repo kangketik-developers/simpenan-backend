@@ -13,7 +13,7 @@ class ReportIn(BaseModel):
     year: int
 
 
-class reportOut(BaseModel):
+class ReportOut(BaseModel):
     name: str
     date: str
     sign_in: str
@@ -21,6 +21,7 @@ class reportOut(BaseModel):
     activity_score: float
     attendance_score: float
     total_score: float
+    percentage_score: float
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
 
@@ -34,5 +35,5 @@ async def fetch_atendance():
     inmates = []
     cursor = collection.find({})
     async for document in cursor:
-        inmates.append(reportOut(**document))
+        inmates.append(ReportOut(**document))
     return inmates
