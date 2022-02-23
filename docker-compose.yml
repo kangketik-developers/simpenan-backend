@@ -12,6 +12,11 @@ networks:
 services:
   backend:
     image: ghcr.io/kangketik-developers/simpenan-backend:main
+    volumes:
+      - ./assets/faces:/code/assets/faces
+      - ./assets/qrcodes:/code/assets/qrcodes
+      - ./assets/tf_trained_model:/code/assets/tf_trained_model
+      - ./uploads:/code/uploads
     networks:
       - default
       - internal
@@ -19,6 +24,8 @@ services:
       - "8000:8000"
   database:
     image: mongo:latest
+    volumes:
+      - ./data:/data/db
     networks:
       internal:
         ipv4_address: 10.10.10.3
