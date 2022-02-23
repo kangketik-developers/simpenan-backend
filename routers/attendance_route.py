@@ -32,7 +32,7 @@ async def capture_sign_in_attendance(file: UploadFile = File(...)):
     labels = []
     filename = secure_filename(str(uuid.uuid4())).lower()
     folder_berkas = os.path.join(ATT_CAP_PATH, f"{filename}.jpeg")
-    try: 
+    try:
         async with aiofiles.open(folder_berkas, 'wb') as out_file:
             content = await file.read()
             await out_file.write(content)
@@ -94,7 +94,7 @@ async def capture_sign_out_attendance(file: UploadFile = File(...)):
     print(total_hari)
     filename = secure_filename(str(uuid.uuid4())).lower()
     folder_berkas = os.path.join(ATT_CAP_PATH, f"{filename}.jpeg")
-    try: 
+    try:
         async with aiofiles.open(folder_berkas, 'wb') as out_file:
             content = await file.read()
             await out_file.write(content)
@@ -160,7 +160,7 @@ async def remove_all_attendance():
     raise HTTPException(status_code=400, detail='Terjadi kesalahan ketika menghapus absensi!')
 
 @router.delete("/{id}")
-async def remove_user(id: str):
+async def remove_attendance(id: str):
     response = await delete_attendance(id)
     if response:
         return response
