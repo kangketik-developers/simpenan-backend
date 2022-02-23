@@ -60,6 +60,13 @@ async def fetch_inmates_score_by_args(inmates_id, month, year):
     return InmatesScoreOut(**document)
 
 
+async def fetch_inmates_score_by_filtered(month, year):
+    document = await collection.find_one({"month": month, "year": year})
+    if document is None:
+        return None
+    return InmatesScoreOut(**document)
+
+
 async def post_inmates_score(inmates_score):
     document = inmates_score.dict()
     uid = str(uuid.uuid4())
