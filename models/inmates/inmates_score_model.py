@@ -53,15 +53,16 @@ async def fetch_all_inmates_score():
     return inmates_score
 
 
+async def fetch_inmates_score_by_filtered(month, year):
+    inmates_score = []
+    cursor = await collection.find_one({"month": month, "year": year})
+    async for document in cursor:
+        inmates_score.append(InmatesScoreOut(**document))
+    return inmates_score
+
+
 async def fetch_inmates_score_by_args(inmates_id, month, year):
     document = await collection.find_one({"inmates_id": inmates_id, "month": month, "year": year})
-    if document is None:
-        return None
-    return InmatesScoreOut(**document)
-
-
-async def fetch_inmates_score_by_filtered(month, year):
-    document = await collection.find_one({"month": month, "year": year})
     if document is None:
         return None
     return InmatesScoreOut(**document)
