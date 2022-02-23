@@ -17,7 +17,7 @@ async def show_report():
 
 @router.get("/{month}/{year}", response_model=Page[reportOut])
 async def show_report_monthly(month: int, year: int):
-    responses = await fetch_atendance()
+    responses = await fetch_all_inmates_score()
     this_date = datetime.datetime.strptime(f"{year}-{month}", "%Y-%m")
     responses = [response for response in responses if response.created_at >= this_date]
     return paginate(responses)
