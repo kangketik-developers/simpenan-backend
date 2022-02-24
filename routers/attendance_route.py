@@ -7,7 +7,7 @@ from fastapi_pagination import Page, add_pagination, paginate
 from werkzeug.utils import secure_filename
 
 from models.attendance_model import *
-from models.inmates.inmates_model import fetch_all_inmates_label, fetch_by_inmates_name
+from models.inmates.inmates_model import fetch_all_inmates_label, fetch_by_inmates_name, fetch_by_inmates_id
 from models.inmates.inmates_score_model import *
 from utils.attendance_util import rules_absensi, hitung_hari
 from utils.detector_util import detect
@@ -78,8 +78,9 @@ async def capture_sign_in_attendance(file: UploadFile = File(...)):
                     percentage_score=round((find_score.total_score + nilai_total) / total_hari, 2)
                 )
                 await put_inmates_score(find_score.id, score)
-            await post_attendance_sign_in(find_inmates.id, find_inmates.name, tanggal, jam, nilai_absen, nilai_kegiatan,
-                                          nilai_total)
+            await post_attendance_sign_in(
+                find_inmates.id, find_inmates.name, tanggal, jam, nilai_absen, nilai_kegiatan, nilai_total
+            )
         return {
             "id": find_inmates.id,
             "name": results[0],
@@ -87,6 +88,33 @@ async def capture_sign_in_attendance(file: UploadFile = File(...)):
             "messages": results[2]
         }
     raise HTTPException(status_code=400, detail=f'Terjadi kesalahan ketika menyimpan capture!')
+
+
+@router.put("/kegiatan", response_model=AttendanceOut)
+async def capture_activity(inmates_id: str):
+    activity_score = 50
+    tanggal = datetime.datetime.now().date().strftime("%Y-%m-%d")
+    month = datetime.datetime.now().date().strftime("%m")
+    year = datetime.datetime.now().date().strftime("%Y")
+    history = await fetch_attendance_by_inmates_id_and_date(inmates_id, tanggal)
+    if history:
+        total_score = history.attendance_score + activity_score
+        response = await put_attendance_activity(history.id, activity_score, total_score)
+        if response:
+            find_score = await fetch_inmates_score_by_args(inmates_id, int(month), int(year))
+            find_inmates = await fetch_by_inmates_id(inmates_id)
+            score = InmatesScoreIn(
+                inmates_id=inmates_id,
+                name=find_inmates.name,
+                month=month,
+                year=year,
+                total_score=find_score.total_score + 8,
+                percentage_score=round((find_score.total_score + 8) / total_hari, 2)
+            )
+            await put_inmates_score(find_score.id, score)
+            return response
+        raise HTTPException(status_code=400, detail=f'Terjadi kesalahan ketika menyimpan!')
+    raise HTTPException(status_code=404, detail=f'WBP tidak di temukan!')
 
 
 @router.put("/pulang", response_model=AttendanceOut)
@@ -119,26 +147,15 @@ async def capture_sign_out_attendance(file: UploadFile = File(...)):
             nilai_total = find_attendance.total_score + 2.5
             if find_attendance.sign_out is None:
                 find_score = await fetch_inmates_score_by_args(find_inmates.id, int(month), int(year))
-                if find_score is None:
-                    score = InmatesScoreIn(
-                        inmates_id=find_inmates.id,
-                        name=find_inmates.name,
-                        month=month,
-                        year=year,
-                        total_score=nilai_total,
-                        percentage_score=round(nilai_total / total_hari, 2)
-                    )
-                    await post_inmates_score(score)
-                else:
-                    score = InmatesScoreIn(
-                        inmates_id=find_inmates.id,
-                        name=find_inmates.name,
-                        month=month,
-                        year=year,
-                        total_score=find_score.total_score + 2.5,
-                        percentage_score=round((find_score.total_score + 2.5) / total_hari, 2)
-                    )
-                    await put_inmates_score(find_score.id, score)
+                score = InmatesScoreIn(
+                    inmates_id=find_inmates.id,
+                    name=find_inmates.name,
+                    month=month,
+                    year=year,
+                    total_score=find_score.total_score + 2.5,
+                    percentage_score=round((find_score.total_score + 2.5) / total_hari, 2)
+                )
+                await put_inmates_score(find_score.id, score)
                 await put_attendance_sign_out(find_attendance.id, jam, nilai_absen, nilai_total)
             return {
                 "id": find_attendance.id,
