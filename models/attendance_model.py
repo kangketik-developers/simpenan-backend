@@ -43,6 +43,12 @@ class AttendancePutDb(BaseModel):
     updated_at: datetime.datetime
 
 
+class AttendanceActivityDB(BaseModel):
+    activity_score: float
+    total_score: float
+    updated_at: datetime.datetime
+
+
 client = motor.motor_asyncio.AsyncIOMotorClient(DB_URL)
 database = client.simpenan
 collection = database.attendance
@@ -96,6 +102,22 @@ async def put_attendance_sign_out(id, sign_out, attendance_score, total_score):
             "$set": AttendancePutDb(
                 sign_out=sign_out,
                 attendance_score=attendance_score,
+                total_score=total_score,
+                updated_at=datetime.datetime.today()
+            ).dict()
+        }
+    )
+    if response:
+        return {"detail": "Absen pulang berhasil diperbarui!"}
+    return 0
+
+
+async def put_attendance_activity(id, activity_score, total_score):
+    response = await collection.update_one(
+        {"id": id},
+        {
+            "$set": AttendanceActivityDB(
+                activity_score=activity_score,
                 total_score=total_score,
                 updated_at=datetime.datetime.today()
             ).dict()
